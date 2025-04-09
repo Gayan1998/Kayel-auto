@@ -144,7 +144,7 @@ foreach ($items as $item) {
                     <div class="row">
                         <div class="col-12">
                             <p>Puttalam Road, Nikaweratiya</p>
-                            <p>Tel: 077 720 7573 | 077 778 6876 | 074 210 9838</p>
+                            <p>Tel: 077 720 7573 | 077 778 6876</p>
                             <p>Tel (Japan): +81 90 9181 7573 | +81 80 6914 5435</p>
                             <p>Email: yoshimuraauto88@gmail.com | <strong>Reg No:</strong> 11/3467</p>
                         </div>

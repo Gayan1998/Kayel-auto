@@ -30,80 +30,104 @@ try {
     // Start transaction
     $pdo->beginTransaction();
 
-    // Initialize totals
+    // Calculate totals upfront to avoid recalculation
     $totalAmount = 0;
     $totalProfit = 0;
-
-    // Create new sale record
-    $stmt = $pdo->prepare("
-        INSERT INTO sales (customer_id, total_amount, profit, sale_date, created_at, updated_at)
-        VALUES (:customer_id, :total_amount, :profit, NOW(), NOW(), NOW())
-    ");
-
-    // Initially insert with 0 totals
-    $stmt->execute([
-        'customer_id' => null,
-        'total_amount' => 0,
-        'profit' => 0
-    ]);
-
-    $saleId = $pdo->lastInsertId();
-
-    // Insert sale items
-    $stmtItems = $pdo->prepare("
-        INSERT INTO sale_items (sale_id, product_id, quantity, price, total_price, created_at, updated_at)
-        VALUES (:sale_id, :product_id, :quantity, :price, :total_price, NOW(), NOW())
-    ");
-
-    // Process each item and calculate totals
+    
     foreach ($data['items'] as $item) {
         $quantity = (int)$item['qty'];
         $sellingPrice = (float)$item['price'];
         $costPrice = (float)$item['cost'];
         
-        // Calculate item totals
         $itemTotalPrice = $sellingPrice * $quantity;
         $itemProfit = ($sellingPrice - $costPrice) * $quantity;
-
-        // Insert sale item
-        $stmtItems->execute([
-            'sale_id' => $saleId,
-            'product_id' => $item['id'],
-            'quantity' => $quantity,
-            'price' => $sellingPrice,
-            'total_price' => $itemTotalPrice
-        ]);
-
-        // Add to running totals
+        
         $totalAmount += $itemTotalPrice;
         $totalProfit += $itemProfit;
     }
 
-    // Update the sale with final totals
-    $stmtUpdate = $pdo->prepare("
-        UPDATE sales 
-        SET total_amount = :total_amount,
-            profit = :profit
-        WHERE id = :sale_id
+    // Extract customer data if present
+    $customerId = isset($data['customer_id']) ? $data['customer_id'] : null;
+
+    // Create new sale record with final totals immediately
+    $stmt = $pdo->prepare("
+        INSERT INTO sales (customer_id, total_amount, profit, sale_date, created_at, updated_at)
+        VALUES (:customer_id, :total_amount, :profit, NOW(), NOW(), NOW())
     ");
 
-    $stmtUpdate->execute([
+    $stmt->execute([
+        'customer_id' => $customerId,
         'total_amount' => $totalAmount,
-        'profit' => $totalProfit,
-        'sale_id' => $saleId
+        'profit' => $totalProfit
     ]);
 
+    $saleId = $pdo->lastInsertId();
+    
+    // Prepare batch insert for sale items
+    $itemValues = [];
+    $placeholders = [];
+    $stockUpdates = [];
+    $index = 1;
+    
     foreach ($data['items'] as $item) {
-        $stmtUpdateStock = $pdo->prepare("
-            UPDATE products 
-            SET quantity = quantity - :quantity
-            WHERE id = :product_id
-        ");
-
-        $stmtUpdateStock->execute([
-            'quantity' => $item['qty'],
-            'product_id' => $item['id']
-        ]);
+        $quantity = (int)$item['qty'];
+        $sellingPrice = (float)$item['price'];
+        $itemTotalPrice = $sellingPrice * $quantity;
+        
+        // Add placeholders for this item
+        $placeholders[] = "(:sale_id, :product_id{$index}, :quantity{$index}, :price{$index}, :total_price{$index}, NOW(), NOW())";
+        
+        // Add parameter values
+        $itemValues[":product_id{$index}"] = $item['id'];
+        $itemValues[":quantity{$index}"] = $quantity;
+        $itemValues[":price{$index}"] = $sellingPrice;
+        $itemValues[":total_price{$index}"] = $itemTotalPrice;
+        
+        // Track stock updates
+        $stockUpdates[] = [
+            'product_id' => $item['id'],
+            'quantity' => $quantity
+        ];
+        
+        $index++;
+    }
+    
+    // Add the sale_id to the parameters
+    $itemValues[':sale_id'] = $saleId;
+    
+    // Execute batch insert for sale items if there are items
+    if (!empty($placeholders)) {
+        $placeholderStr = implode(', ', $placeholders);
+        $sqlItems = "INSERT INTO sale_items (sale_id, product_id, quantity, price, total_price, created_at, updated_at) 
+                     VALUES {$placeholderStr}";
+        
+        $stmtItems = $pdo->prepare($sqlItems);
+        $stmtItems->execute($itemValues);
+    }
+    
+    // Batch update stock with a single query using CASE statement
+    if (!empty($stockUpdates)) {
+        $cases = "";
+        $productIds = [];
+        
+        foreach ($stockUpdates as $index => $update) {
+            $paramName = ":product_id{$index}";
+            $quantityName = ":quantity{$index}";
+            
+            $cases .= " WHEN id = {$paramName} THEN quantity - {$quantityName}";
+            $productIds[$paramName] = $update['product_id'];
+            $productIds[$quantityName] = $update['quantity'];
+        }
+        
+        $updateProductIds = implode(',', array_map(function($index) { 
+            return ":product_id{$index}"; 
+        }, array_keys($stockUpdates)));
+        
+        $sqlStock = "UPDATE products SET quantity = CASE {$cases} ELSE quantity END 
+                     WHERE id IN ({$updateProductIds})";
+        
+        $stmtStock = $pdo->prepare($sqlStock);
+        $stmtStock->execute($productIds);
     }
 
     // Commit transaction

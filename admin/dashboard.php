@@ -10,15 +10,20 @@ if (!isset($_SESSION['user_id'])) {
 // Fetch existing products
 $stmt = $pdo->query("SELECT * FROM products ORDER BY name");
 $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+// Fetch existing customers
+$stmt = $pdo->query("SELECT id, name, phone, email FROM customers ORDER BY name");
+$customers = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dark POS Sale Page</title>
+    <title>YOSHIMURA POS System</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-rc.0/css/select2.min.css" rel="stylesheet">
     <style>
         .btn-remove {
             background-color: transparent;
@@ -174,6 +179,16 @@ $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
             transition: opacity 0.2s;
         }
 
+        .btn-quotation {
+            background-color: var(--accent-yellow);
+            color: #000;
+            border: none;
+            padding: 0.75rem;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: opacity 0.2s;
+        }
+
         .btn-cancel {
             background-color: var(--accent-red);
             color: #000;
@@ -290,6 +305,59 @@ $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
         .suggestion-item .out-of-stock {
             color: #dc3545;
         }
+
+        /* Select2 customization for dark theme */
+        .select2-container--default .select2-selection--single {
+            background-color: var(--darker-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            height: 38px;
+            display: flex;
+            align-items: center;
+        }
+
+        .select2-container--default .select2-selection--single .select2-selection__rendered {
+            color: var(--text-primary);
+            line-height: 38px;
+            padding-left: 12px;
+        }
+
+        .select2-container--default .select2-selection--single .select2-selection__arrow {
+            height: 36px;
+        }
+
+        .select2-dropdown {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+        }
+
+        .select2-container--default .select2-search--dropdown .select2-search__field {
+            background-color: var(--darker-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+        }
+
+        .select2-container--default .select2-results__option {
+            color: var(--text-primary);
+            padding: 8px 12px;
+        }
+
+        .select2-container--default .select2-results__option--highlighted[aria-selected] {
+            background-color: var(--accent-blue);
+            color: white;
+        }
+
+        .select2-container--default .select2-results__option[aria-selected=true] {
+            background-color: var(--darker-bg);
+        }
+
+        .customer-section {
+            margin-bottom: 1rem;
+            padding: 1rem;
+            background-color: var(--darker-bg);
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
     </style>
 </head>
 <body>
@@ -323,19 +391,48 @@ $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
         <!-- Action Buttons Section -->
         <div class="d-flex flex-column h-100">
             <div>
-            <div class="search-container">
-                <input type="text" class="search-bar" id="searchInput" placeholder="Search items...">
-                <div id="suggestions" class="suggestions"></div>
-            </div>
+                <div class="search-container">
+                    <input type="text" class="search-bar" id="searchInput" placeholder="Search items...">
+                    <div id="suggestions" class="suggestions"></div>
+                </div>
                 
-                <div class="mt-auto">
-                    <button class="btn-pay">
-                    <i class="fa-solid fa-money-bill"></i> Pay </button>
-                </div> 
+                <!-- Customer Selection Section -->
+                <div class="customer-section">
+                    <div class="mb-3">
+                        <label class="form-label text-secondary">Customer</label>
+                        <select id="customerSelect" class="form-select">
+                            <option value="">Select Customer</option>
+                            <?php foreach ($customers as $customer): ?>
+                                <option value="<?= $customer['id'] ?>" data-info='<?= json_encode($customer) ?>'>
+                                    <?= htmlspecialchars($customer['name']) ?> <?= !empty($customer['phone']) ? '(' . htmlspecialchars($customer['phone']) . ')' : '' ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <button class="btn-print" onclick="window.open('../customers/add_customer.php', '_blank')">
+                            <i class="fa-solid fa-plus"></i> Add Customer
+                        </button>
+                        <button class="btn-print" onclick="window.open('../customers/view_customers.php', '_blank')">
+                            <i class="fa-solid fa-users"></i> Manage
+                        </button>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-between gap-2 mb-3">
+                    <button class="btn-pay" id="btnPay">
+                        <i class="fa-solid fa-money-bill"></i> Pay
+                    </button>
+                    <button class="btn-quotation" id="btnQuotation">
+                        <i class="fa-solid fa-file-invoice"></i> Quotation
+                    </button>
+                </div>
+                
                 <hr style="border-color: var(--border-color); margin: 0 0 1.5rem;">
                 <div class="action-buttons">
-                    <button class="btn-cancel">
-                    <i class="fa-solid fa-ban"></i> Cancel </button>
+                    <button class="btn-cancel" id="btnCancel">
+                        <i class="fa-solid fa-ban"></i> Cancel
+                    </button>
                 </div>
                 <hr style="border-color: var(--border-color); margin: 0 0 1.5rem;">
 
@@ -344,6 +441,7 @@ $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     <button class="btn-print" onclick="window.open('../inventory/GRN.php', '_blank')">Add New Stock</button>
                     <button class="btn-print" onclick="window.open('../inventory/sales_report.php', '_blank')">Sales Report</button>
                     <button class="btn-print" onclick="window.open('../inventory/stock_report.php', '_blank')">Stock Report</button>
+                    <button class="btn-print" onclick="window.open('../quotations/view_quotations.php', '_blank')">Quotations</button>
                 </div>
             </div>
             
@@ -355,12 +453,38 @@ $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
         </div>
     </div>
 
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-rc.0/js/select2.min.js"></script>
     <script>
         let currentSale = []; // Initialize empty sale
+        let selectedCustomer = null;
         const searchInput = document.getElementById('searchInput');
         const suggestionsContainer = document.getElementById('suggestions');
         let debounceTimer;
         let searchResults = []; // Store the full search results
+
+        $(document).ready(function() {
+            // Initialize Select2 for customer dropdown
+            $('#customerSelect').select2({
+                theme: 'default',
+                placeholder: 'Search for a customer...',
+                allowClear: true,
+                width: '100%'
+            });
+
+            // Listen for customer selection change
+            $('#customerSelect').on('change', function() {
+                const customerId = $(this).val();
+                if (customerId) {
+                    const selectedOption = $(this).find(':selected');
+                    selectedCustomer = JSON.parse(selectedOption.attr('data-info'));
+                    console.log("Selected customer:", selectedCustomer);
+                } else {
+                    selectedCustomer = null;
+                }
+            });
+        });
 
         function renderTableRows() {
             const tableBody = document.getElementById('saleTableBody');
@@ -545,7 +669,9 @@ $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
             try {
                 const requestData = {
-                    items: currentSale
+                    items: currentSale,
+                    customer_id: selectedCustomer ? selectedCustomer.id : null,
+                    customer_info: selectedCustomer
                 };
                 console.log('Sending data:', requestData);
 
@@ -570,12 +696,15 @@ $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 }
 
                 if (result.success) {
-                    alert(`Sale completed successfully!\nTotal Amount: $${parseFloat(result.total_amount).toFixed(2)}`);
+                    alert(`Sale completed successfully!\nTotal Amount: LKR ${parseFloat(result.total_amount).toFixed(2)}`);
                     // Open invoice in new window
-                    openInvoiceWindow(result.sale_id, currentSale);
+                    openInvoiceWindow(result.sale_id, currentSale, selectedCustomer);
                     // Clear the current sale
                     currentSale = [];
                     renderTableRows();
+                    // Clear customer selection
+                    $('#customerSelect').val('').trigger('change');
+                    selectedCustomer = null;
                 } else {
                     throw new Error(result.error || 'Failed to save sale');
                 }
@@ -585,26 +714,92 @@ $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
             }
         }
 
-        function openInvoiceWindow(saleId, items) {
-                // Open new window
-                const printWindow = window.open('', '_blank', 'width=800,height=600');
-                
-                // Generate invoice HTML
-                const invoiceHtml = generateInvoiceHtml(saleId, items);
-                
-                // Write to new window
-                printWindow.document.write(invoiceHtml);
-                printWindow.document.close();
-                
-                // Wait for resources to load then print
-                printWindow.onload = function() {
-                    printWindow.print();
+        // Save quotation function
+        async function saveQuotation() {
+            if (currentSale.length === 0) {
+                alert('No items in quotation');
+                return;
+            }
+
+            try {
+                const requestData = {
+                    items: currentSale,
+                    customer_id: selectedCustomer ? selectedCustomer.id : null,
+                    customer_info: selectedCustomer
                 };
+                console.log('Sending quotation data:', requestData);
+
+                const response = await fetch('../quotations/save_quotation.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestData)
+                });
+
+                const responseText = await response.text();
+                console.log('Raw response:', responseText);
+
+                let result;
+                try {
+                    result = JSON.parse(responseText);
+                } catch (parseError) {
+                    console.error('JSON Parse Error:', parseError);
+                    console.log('Failed to parse response:', responseText);
+                    throw new Error('Invalid response format from server');
+                }
+
+                if (result.success) {
+                    alert(`Quotation created successfully!\nTotal Amount: LKR ${parseFloat(result.total_amount).toFixed(2)}`);
+                    // Open quotation in new window
+                    window.open(`../quotations/generate_quotation.php?id=${result.quotation_id}`, '_blank');
+                    // Clear the current sale
+                    currentSale = [];
+                    renderTableRows();
+                    // Clear customer selection
+                    $('#customerSelect').val('').trigger('change');
+                    selectedCustomer = null;
+                } else {
+                    throw new Error(result.error || 'Failed to create quotation');
+                }
+            } catch (error) {
+                console.error('Error creating quotation:', error);
+                alert('Failed to create quotation: ' + error.message);
+            }
         }
 
-        function generateInvoiceHtml(saleId, items) {
+        function openInvoiceWindow(saleId, items, customer) {
+            // Open new window
+            const printWindow = window.open('', '_blank', 'width=800,height=600');
+            
+            // Generate invoice HTML
+            const invoiceHtml = generateInvoiceHtml(saleId, items, customer);
+            
+            // Write to new window
+            printWindow.document.write(invoiceHtml);
+            printWindow.document.close();
+            
+            // Wait for resources to load then print
+            printWindow.onload = function() {
+                printWindow.print();
+            };
+        }
+
+        function generateInvoiceHtml(saleId, items, customer) {
             const today = new Date().toLocaleDateString();
             const total = items.reduce((sum, item) => sum + (item.price * item.qty), 0);
+            
+            // Customer info section
+            let customerHtml = '';
+            if (customer) {
+                customerHtml = `
+                <div class="mt-3">
+                    <strong>Customer:</strong> ${customer.name}<br>
+                    ${customer.phone ? `<strong>Phone:</strong> ${customer.phone}<br>` : ''}
+                    ${customer.email ? `<strong>Email:</strong> ${customer.email}<br>` : ''}
+                    ${customer.address ? `<strong>Address:</strong> ${customer.address}<br>` : ''}
+                </div>`;
+            }
             
             // Get the invoice template with A4 size formatting
             const invoiceTemplate = `<!DOCTYPE html>
@@ -706,11 +901,12 @@ $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                     <div class="row">
                                         <div class="col-12">
                                             <p>Puttalam Road, Nikaweratiya</p>
-                                            <p>Tel: 077 720 7573 | 077 778 6876 | 074 210 9838</p>
+                                            <p>Tel: 077 720 7573 | 077 778 6876</p>
                                             <p>Tel (Japan): +81 90 9181 7573 | +81 80 6914 5435</p>
                                             <p>Email: yoshimuraauto88@gmail.com | <strong>Reg No:</strong> 11/3467</p>
                                         </div>
                                     </div>
+                                    ${customerHtml}
                                 </div>
                                 <div class="col-md-6 text-md-end">
                                     <h2 class="text-uppercase text-muted" style="font-size: 1.25rem;">Invoice</h2>
@@ -780,14 +976,21 @@ $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
             document.getElementById('saleTableBody').addEventListener('input', handleInputChange);
             document.getElementById('saleTableBody').addEventListener('click', handleRemoveClick);
         });
+
         // Add event listener for pay button
-        document.querySelector('.btn-pay').addEventListener('click', saveSale);
-        document.querySelector('.btn-cancel').addEventListener('click', () => {
+        document.getElementById('btnPay').addEventListener('click', saveSale);
+        
+        // Add event listener for quotation button
+        document.getElementById('btnQuotation').addEventListener('click', saveQuotation);
+        
+        // Add event listener for cancel button
+        document.getElementById('btnCancel').addEventListener('click', () => {
             currentSale = [];
             renderTableRows();
+            // Clear customer selection
+            $('#customerSelect').val('').trigger('change');
+            selectedCustomer = null;
         });
     </script>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
