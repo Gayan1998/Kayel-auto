@@ -1,0 +1,23 @@
+# Force HTTPS redirection
+RewriteEngine On
+RewriteCond %{HTTPS} off
+RewriteCond %{HTTP_HOST} ^kayelautoparts\.com$ [OR]
+RewriteCond %{HTTP_HOST} ^www\.kayelautoparts\.com$
+RewriteRule (.*) https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+# Ensure www is used (optional)
+# RewriteCond %{HTTP_HOST} ^kayelautoparts\.com$ [NC]
+# RewriteRule (.*) https://www.kayelautoparts.com/$1 [L,R=301]
+
+# HSTS header (recommended for security)
+<IfModule mod_headers.c>
+    Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+</IfModule>
+
+# Protect against common vulnerabilities
+<IfModule mod_headers.c>
+    Header set X-Content-Type-Options nosniff
+    Header set X-XSS-Protection "1; mode=block"
+    Header set X-Frame-Options SAMEORIGIN
+    Header set Referrer-Policy strict-origin-when-cross-origin
+</IfModule>

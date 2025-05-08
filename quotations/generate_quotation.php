@@ -81,8 +81,8 @@ $statusColorClass = $statusClass[$status] ?? 'secondary';
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quotation #<?php echo $quotation_id; ?> - YOSHIMURA Auto</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+    <title>Quotation #<?php echo $quotation_id; ?> - KAYEL AUTO PARTS</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         /* A4 page size settings */
         body {
@@ -90,7 +90,7 @@ $statusColorClass = $statusClass[$status] ?? 'secondary';
             height: 297mm;
             margin: 0 auto;
             padding: 0;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
         }
         
         @media print {
@@ -111,40 +111,75 @@ $statusColorClass = $statusClass[$status] ?? 'secondary';
                 width: 100% !important;
                 max-width: none !important;
                 margin: 0 !important;
-                padding: 10mm !important;
+                padding: 8mm !important;
             }
         }
 
+        /* Responsive styles for mobile */
+        @media screen and (max-width: 767px) {
+            body {
+                width: 100%;
+                height: auto;
+            }
+            .container {
+                padding: 10px !important;
+            }
+            .logo-section, .company-title, .quotation-details, .company-contact, .customer-details {
+                text-align: left !important;
+                margin-bottom: 10px;
+            }
+        }
+
+        .container {
+            max-width: 210mm !important;
+            padding: 8mm !important;
+        }
+
         .quotation-header {
-            background-color: #f8f9fa;
-            padding: 1rem; /* Reduced padding from 2rem to 1rem */
-            border-radius: 0.5rem;
-            margin-bottom: 1.5rem; /* Reduced margin from 2rem to 1.5rem */
+            padding: 0.5rem;
+            margin-bottom: 1rem;
+            position: relative;
         }
 
-        .company-details {
-            margin-bottom: 0.5rem; /* Further reduced margin for A4 */
+        .header-divider {
+            height: 4px;
+            background-color: #8B0000;
+            margin-top: 0.5rem;
         }
 
-        .quotation-title {
-            color: #2c3e50;
+        .logo-section {
+            padding-right: 5px;
+        }
+
+        .company-title {
+            color: #8B0000;
             font-weight: 700;
-            margin-bottom: 0.25rem;
-            font-size: 1.4rem; /* Slightly reduced font size for A4 */
+            font-size: 1.5rem;
+            text-transform: uppercase;
+            margin: 0;
+            line-height: 1.2;
         }
 
-        .company-info p {
-            margin-bottom: 0.25rem; /* Reduced paragraph margins */
-            font-size: 0.85rem; /* Smaller font size for company info */
-            line-height: 1.2; /* Tighter line height */
+        .company-contact, .customer-details {
+            font-size: 0.8rem;
+            line-height: 1.3;
         }
 
-        .customer-info {
-            background-color: #f8f9fa;
-            padding: 0.75rem;
-            border-radius: 0.5rem;
-            margin-bottom: 1.5rem;
-            font-size: 0.85rem;
+        .company-contact p, .customer-details p {
+            margin: 0;
+        }
+
+        .quotation-details {
+            font-size: 0.8rem;
+            line-height: 1.3;
+        }
+
+        .quotation-details p {
+            margin: 0;
+        }
+
+        .company-logo {
+            max-height: 60px; /* Reduced for compactness */
         }
 
         .status-badge {
@@ -155,13 +190,22 @@ $statusColorClass = $statusClass[$status] ?? 'secondary';
 
         .table th {
             background-color: #f8f9fa;
+            font-size: 0.85rem;
+        }
+
+        .table td {
+            font-size: 0.85rem;
         }
 
         .total-section {
             background-color: #f8f9fa;
-            padding: 1rem;
+            padding: 0.75rem;
             border-radius: 0.5rem;
             margin-top: 1.5rem;
+        }
+
+        .total-section table {
+            font-size: 0.85rem;
         }
 
         .validity-note {
@@ -172,8 +216,10 @@ $statusColorClass = $statusClass[$status] ?? 'secondary';
 
         .footer {
             margin-top: 2rem;
-            padding-top: 1rem;
+            padding-top: 0.75rem;
             border-top: 1px solid #dee2e6;
+            text-align: center;
+            font-size: 0.8rem;
         }
 
         .terms-section {
@@ -183,49 +229,65 @@ $statusColorClass = $statusClass[$status] ?? 'secondary';
             border: 1px solid #dee2e6;
             border-radius: 0.5rem;
         }
+
+        .customer-info {
+            background-color: #f8f9fa;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1.5rem;
+            font-size: 0.85rem;
+        }
     </style>
 </head>
 <body>
-    <div class="container mt-3 mb-3"> <!-- Adjusted for A4 size -->
+    <div class="container">
         <!-- Print Button -->
-        <div class="row mb-3 no-print"> <!-- Reduced margin -->
+        <div class="row mb-2 no-print">
             <div class="col-12">
-                <button onclick="window.print()" class="btn btn-primary float-end">
+                <button onclick="window.print()" class="btn btn-primary btn-sm float-end">
                     Print Quotation
                 </button>
-                <a href="view_quotations.php" class="btn btn-secondary me-2 float-end">Back to Quotations</a>
+                <a href="view_quotations.php" class="btn btn-secondary btn-sm me-2 float-end">Back to Quotations</a>
             </div>
         </div>
 
         <!-- Quotation Header -->
         <div class="quotation-header">
-            <div class="row">
-                <div class="col-md-6 company-details company-info">
-                    <h1 class="quotation-title">YOHIMURA Auto</h1>
-                    <p class="text-muted">
-                        Dealers in Japanese Vehicle | Body Parts & Machinery | Bike Spare Parts
-                    </p>
-                    <div class="row">
-                        <div class="col-12">
-                            <p>Puttalam Road, Nikaweratiya</p>
-                            <p>Tel: 077 720 7573 | 077 778 6876</p>
-                            <p>Tel (Japan): +81 90 9181 7573 | +81 80 6914 5435</p>
-                            <p>Email: yoshimuraauto88@gmail.com | <strong>Reg No:</strong> 11/3467</p>
+            <!-- Top Row: Logo + Company Title | Quotation Details -->
+            <div class="row align-items-center mb-2">
+                <div class="col-8">
+                    <div class="d-flex align-items-center">
+                        <div class="logo-section">
+                            <img src="../assets/images/logo.png" alt="Kayel Auto Parts Logo" class="company-logo img-fluid">
                         </div>
+                        <h1 class="company-title ms-2">KAYEL AUTO PARTS</h1>
                     </div>
                 </div>
-                <div class="col-md-6 text-md-end">
-                    <h2 class="text-uppercase text-muted" style="font-size: 1.25rem;">Quotation</h2>
-                    <p class="mb-1" style="font-size: 0.9rem;"><strong>Quotation #:</strong> <?php echo $quotation_id; ?></p>
-                    <p class="mb-1" style="font-size: 0.9rem;"><strong>Date:</strong> <?php echo $quotation['formatted_date']; ?></p>
-                    <p class="mb-1" style="font-size: 0.9rem;"><strong>Valid Until:</strong> <?php echo $quotation['formatted_valid_until']; ?></p>
-                    <p class="mb-0">
-                        <span class="status-badge bg-<?php echo $statusColorClass; ?> text-white">
-                            <?php echo $statusLabel; ?>
-                        </span>
-                    </p>
+                <div class="col-4 text-end">
+                    <div class="quotation-details">
+                        <h2 class="text-uppercase text-muted" style="font-size: 1.1rem; margin-bottom: 0.2rem;">Quotation</h2>
+                        <p><strong>Quotation #:</strong> <?php echo $quotation_id; ?></p>
+                        <p><strong>Date:</strong> <?php echo $quotation['formatted_date']; ?></p>
+                        <p><strong>Valid Until:</strong> <?php echo $quotation['formatted_valid_until']; ?></p>
+                        <p class="mb-0 mt-2">
+                            <span class="status-badge bg-<?php echo $statusColorClass; ?> text-white">
+                                <?php echo $statusLabel; ?>
+                            </span>
+                        </p>
+                    </div>
                 </div>
             </div>
+            <!-- Bottom Row: Company Contact -->
+            <div class="row">
+                <div class="col-6">
+                    <div class="company-contact">
+                        <p>Dealer of All Japan, Indian & China Vehicle Parts</p>
+                        <p>Kurunegala Road, Vithikuliya, Nikaweratiya</p>
+                        <p>Hot Line: 077-9632277</p>
+                    </div>
+                </div>
+            </div>
+            <div class="header-divider"></div>
         </div>
 
         <!-- Customer Information -->
@@ -310,15 +372,11 @@ $statusColorClass = $statusClass[$status] ?? 'secondary';
 
         <!-- Footer -->
         <div class="footer">
-            <div class="row">
-                <div class="col-md-12 text-center">
-                    <p class="text-muted mb-2">This is a computer generated document. No signature required.</p>
-                    <p class="text-muted mb-0">Thank you for your business!</p>
-                </div>
-            </div>
+            <p class="text-muted mb-0">This is a computer generated document. No signature required.</p>
+            <p class="text-muted mb-0">Thank you for your business!</p>
         </div>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

@@ -12,7 +12,7 @@ $stmt = $pdo->query("SELECT * FROM products ORDER BY name");
 $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 // Fetch existing customers
-$stmt = $pdo->query("SELECT id, name, phone, email FROM customers ORDER BY name");
+$stmt = $pdo->query("SELECT id, name, phone, email, address FROM customers ORDER BY name");
 $customers = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 <!DOCTYPE html>
@@ -20,7 +20,9 @@ $customers = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>YOSHIMURA POS System</title>
+    <title>Dashboard</title>
+    <link rel="icon" href="../assets/images/logo.png" type="image/x-icon">
+    <link rel="shortcut icon" href="../assets/images/logo.png" type="image/x-icon">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-rc.0/css/select2.min.css" rel="stylesheet">
@@ -55,19 +57,42 @@ $customers = $stmt->fetchAll(PDO::FETCH_ASSOC);
         body {
             background-color: var(--dark-bg);
             color: var(--text-primary);
-            height: 100vh;
+            min-height: 100vh;
             margin: 0;
             padding: 1rem;
-            overflow: hidden;
+            overflow-x: hidden;
         }
 
+        /* Mobile-first approach: content stacks by default */
         .content-wrapper {
-            display: grid;
-            grid-template-columns: 1fr 300px;
+            display: flex;
+            flex-direction: column;
             gap: 1rem;
-            height: calc(100vh - 2rem);
             max-width: 1400px;
             margin: 0 auto;
+        }
+
+        /* For tablets and larger */
+        @media (min-width: 768px) {
+            .content-wrapper {
+                display: grid;
+                grid-template-columns: 1fr;
+                gap: 1rem;
+                min-height: calc(100vh - 2rem);
+            }
+        }
+
+        /* For desktops */
+        @media (min-width: 992px) {
+            body {
+                overflow: hidden;
+            }
+            .content-wrapper {
+                display: grid;
+                grid-template-columns: 1fr 300px;
+                gap: 1rem;
+                height: calc(100vh - 2rem);
+            }
         }
 
         .main-card {
@@ -116,16 +141,51 @@ $customers = $stmt->fetchAll(PDO::FETCH_ASSOC);
             vertical-align: middle;
         }
 
+        /* Make the table responsive */
+        @media (max-width: 767px) {
+            .table-container {
+                overflow-x: auto;
+            }
+            
+            .table th, .table td {
+                padding: 0.75rem 0.5rem;
+                font-size: 0.9rem;
+            }
+            
+            .table th:nth-child(3), 
+            .table td:nth-child(3) {
+                width: 60px;
+            }
+            
+            .table th:nth-child(4), 
+            .table td:nth-child(4) {
+                width: 70px;
+            }
+            
+            .table th:nth-child(5), 
+            .table td:nth-child(5) {
+                width: 40px;
+            }
+        }
+
         .editable-cell {
             background-color: transparent;
             border: none;
             padding: 0.25rem 2.5rem 0.25rem 0.25rem;
             width: 120px;
-            color:rgb(0, 0, 0);
+            color: rgb(0, 0, 0);
             text-align: right;
             font-size: 1rem;
             appearance: textfield;
             position: relative;
+        }
+
+        @media (max-width: 767px) {
+            .editable-cell {
+                width: 80px;
+                padding: 0.25rem 2rem 0.25rem 0.25rem;
+                font-size: 0.9rem;
+            }
         }
 
         /* Style for Webkit browsers (Chrome, Safari) */
@@ -158,56 +218,56 @@ $customers = $stmt->fetchAll(PDO::FETCH_ASSOC);
             margin-bottom: 0.5rem;
         }
 
-        .btn-pay {
-            background-color: var(--accent-green);
-            color: #000;
+        @media (max-width: 767px) {
+            .action-buttons {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .action-buttons {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .btn-pay, .btn-print, .btn-quotation, .btn-cancel, .btn-logout {
             border: none;
             padding: 0.75rem;
             border-radius: 8px;
             font-weight: 500;
             width: 100%;
             transition: opacity 0.2s;
+            margin-bottom: 0.5rem;
+            /* Improve touch target size on mobile */
+            min-height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-pay {
+            background-color: var(--accent-green);
+            color: #000;
         }
 
         .btn-print {
             background-color: var(--accent-blue);
             color: #000;
-            border: none;
-            padding: 0.75rem;
-            border-radius: 8px;
-            font-weight: 500;
-            transition: opacity 0.2s;
         }
 
         .btn-quotation {
             background-color: var(--accent-yellow);
             color: #000;
-            border: none;
-            padding: 0.75rem;
-            border-radius: 8px;
-            font-weight: 500;
-            transition: opacity 0.2s;
         }
 
         .btn-cancel {
             background-color: var(--accent-red);
             color: #000;
-            border: none;
-            padding: 0.75rem;
-            border-radius: 8px;
-            font-weight: 500;
-            transition: opacity 0.2s;
         }
 
         .btn-logout {
             background-color: var(--accent-red);
             color: #000;
-            border: none;
-            padding: 0.75rem;
-            border-radius: 8px;
-            font-weight: 500;
-            width: 100%;
-            transition: opacity 0.2s;
         }
 
         .btn:hover {
@@ -217,9 +277,14 @@ $customers = $stmt->fetchAll(PDO::FETCH_ASSOC);
         .table-container {
             flex: 1;
             overflow-y: auto;
-            min-height: 0;
-            max-height: calc(100vh - 130px);
+            min-height: 200px; /* Minimum height on mobile */
             position: relative;
+        }
+
+        @media (min-width: 992px) {
+            .table-container {
+                max-height: calc(100vh - 130px);
+            }
         }
 
         .table thead {
@@ -262,6 +327,7 @@ $customers = $stmt->fetchAll(PDO::FETCH_ASSOC);
         ::-webkit-scrollbar-thumb:hover {
             background: #444;
         }
+
         .search-container {
             position: relative;
             margin-bottom: 1rem;
@@ -358,12 +424,79 @@ $customers = $stmt->fetchAll(PDO::FETCH_ASSOC);
             border-radius: 8px;
             border: 1px solid var(--border-color);
         }
+
+        /* Mobile specific styling for buttons */
+        @media (max-width: 767px) {
+            .d-flex.justify-content-between.gap-2.mb-3 {
+                flex-direction: column;
+            }
+            
+            .d-flex.justify-content-between.gap-2.mb-3 button {
+                width: 100%;
+                margin-bottom: 0.5rem;
+            }
+            
+            hr {
+                margin: 1rem 0;
+            }
+            
+            /* Larger touch targets for mobile */
+            .suggestion-item {
+                padding: 12px;
+                min-height: 44px;
+            }
+            
+            /* Make search dropdown more mobile-friendly */
+            .select2-container {
+                width: 100% !important;
+            }
+        }
+
+        /* Mobile navigation panel for small screens */
+        .mobile-nav-panel {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: var(--darker-bg);
+            border-top: 1px solid var(--border-color);
+            padding: 0.5rem;
+            z-index: 1000;
+        }
+
+        @media (max-width: 767px) {
+            .mobile-nav-panel {
+                display: flex;
+                justify-content: space-around;
+            }
+            
+            body {
+                padding-bottom: 60px; /* Space for the nav panel */
+            }
+            
+            .mobile-nav-btn {
+                background: transparent;
+                border: none;
+                color: var(--text-primary);
+                font-size: 0.8rem;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                padding: 0.5rem;
+            }
+            
+            .mobile-nav-btn i {
+                font-size: 1.2rem;
+                margin-bottom: 0.25rem;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="content-wrapper">
         <!-- Main Sale Table Section -->
-        <div class="main-card">
+        <div class="main-card mb-3">
             <div class="table-container">
                 <table class="table">
                     <thead>
@@ -389,7 +522,7 @@ $customers = $stmt->fetchAll(PDO::FETCH_ASSOC);
         </div>
 
         <!-- Action Buttons Section -->
-        <div class="d-flex flex-column h-100">
+        <div class="d-flex flex-column">
             <div>
                 <div class="search-container">
                     <input type="text" class="search-bar" id="searchInput" placeholder="Search items...">
@@ -399,7 +532,12 @@ $customers = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 <!-- Customer Selection Section -->
                 <div class="customer-section">
                     <div class="mb-3">
-                        <label class="form-label text-secondary">Customer</label>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <label class="form-label text-secondary">Customer</label>
+                            <button id="refreshCustomersBtn" class="btn btn-sm btn-outline-secondary" type="button">
+                                <i class="fas fa-sync-alt"></i>
+                            </button>
+                        </div>
                         <select id="customerSelect" class="form-select">
                             <option value="">Select Customer</option>
                             <?php foreach ($customers as $customer): ?>
@@ -409,12 +547,9 @@ $customers = $stmt->fetchAll(PDO::FETCH_ASSOC);
                             <?php endforeach; ?>
                         </select>
                     </div>
-                    <div class="d-flex justify-content-between">
-                        <button class="btn-print" onclick="window.open('../customers/add_customer.php', '_blank')">
-                            <i class="fa-solid fa-plus"></i> Add Customer
-                        </button>
+                    <div class="d-flex justify-content-center">
                         <button class="btn-print" onclick="window.open('../customers/view_customers.php', '_blank')">
-                            <i class="fa-solid fa-users"></i> Manage
+                            <i class="fa-solid fa-users"></i> Manage Customers
                         </button>
                     </div>
                 </div>
@@ -436,12 +571,41 @@ $customers = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 </div>
                 <hr style="border-color: var(--border-color); margin: 0 0 1.5rem;">
 
-                <div class="action-buttons">
+                <!-- On mobile, hide these buttons in the main interface -->
+                <div class="action-buttons d-none d-md-grid">
                     <button class="btn-print" onclick="window.open('../inventory/add_product.php', '_blank')">Item Register</button>
                     <button class="btn-print" onclick="window.open('../inventory/GRN.php', '_blank')">Add New Stock</button>
                     <button class="btn-print" onclick="window.open('../inventory/sales_report.php', '_blank')">Sales Report</button>
                     <button class="btn-print" onclick="window.open('../inventory/stock_report.php', '_blank')">Stock Report</button>
                     <button class="btn-print" onclick="window.open('../quotations/view_quotations.php', '_blank')">Quotations</button>
+                </div>
+
+                <!-- On desktop, show these buttons normally -->
+                <div class="mt-3 mb-4 d-md-none">
+                    <div class="d-grid">
+                        <button class="btn-print" type="button" data-bs-toggle="collapse" data-bs-target="#moreOptions" aria-expanded="false" aria-controls="moreOptions">
+                            <i class="fa-solid fa-ellipsis"></i> More Options
+                        </button>
+                    </div>
+                    <div class="collapse mt-2" id="moreOptions">
+                        <div class="d-grid gap-2">
+                            <button class="btn-print" onclick="window.open('../inventory/add_product.php', '_blank')">
+                                <i class="fa-solid fa-plus-circle"></i> Item Register
+                            </button>
+                            <button class="btn-print" onclick="window.open('../inventory/GRN.php', '_blank')">
+                                <i class="fa-solid fa-boxes"></i> Add New Stock
+                            </button>
+                            <button class="btn-print" onclick="window.open('../inventory/sales_report.php', '_blank')">
+                                <i class="fa-solid fa-chart-line"></i> Sales Report
+                            </button>
+                            <button class="btn-print" onclick="window.open('../inventory/stock_report.php', '_blank')">
+                                <i class="fa-solid fa-box"></i> Stock Report
+                            </button>
+                            <button class="btn-print" onclick="window.open('../quotations/view_quotations.php', '_blank')">
+                                <i class="fa-solid fa-file-alt"></i> Quotations
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
             
@@ -451,6 +615,26 @@ $customers = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 </button>
             </div>
         </div>
+    </div>
+
+    <!-- Mobile Navigation Panel -->
+    <div class="mobile-nav-panel d-md-none">
+        <button class="mobile-nav-btn" id="mobileSearchBtn">
+            <i class="fa-solid fa-search"></i>
+            <span>Search</span>
+        </button>
+        <button class="mobile-nav-btn" id="mobileCartBtn">
+            <i class="fa-solid fa-shopping-cart"></i>
+            <span>Cart</span>
+        </button>
+        <button class="mobile-nav-btn" id="mobileCustomerBtn">
+            <i class="fa-solid fa-user"></i>
+            <span>Customer</span>
+        </button>
+        <button class="mobile-nav-btn" id="mobilePayBtn">
+            <i class="fa-solid fa-money-bill"></i>
+            <span>Pay</span>
+        </button>
     </div>
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -463,6 +647,7 @@ $customers = $stmt->fetchAll(PDO::FETCH_ASSOC);
         const suggestionsContainer = document.getElementById('suggestions');
         let debounceTimer;
         let searchResults = []; // Store the full search results
+        let isMobile = window.innerWidth < 768;
 
         $(document).ready(function() {
             // Initialize Select2 for customer dropdown
@@ -483,6 +668,44 @@ $customers = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 } else {
                     selectedCustomer = null;
                 }
+            });
+
+            // Handle window resize to check if mobile or desktop
+            $(window).resize(function() {
+                isMobile = window.innerWidth < 768;
+            });
+
+                // Set up periodic refresh every 30 seconds
+            setInterval(refreshCustomerDropdown, 30000);
+            
+            // Option to manually refresh
+            $('#refreshCustomersBtn').on('click', function() {
+                refreshCustomerDropdown();
+            });
+
+            // Mobile navigation handlers
+            $('#mobileSearchBtn').click(function() {
+                $('html, body').animate({
+                    scrollTop: $('#searchInput').offset().top - 20
+                }, 200);
+                $('#searchInput').focus();
+            });
+
+            $('#mobileCartBtn').click(function() {
+                $('html, body').animate({
+                    scrollTop: $('.main-card').offset().top - 20
+                }, 200);
+            });
+
+            $('#mobileCustomerBtn').click(function() {
+                $('html, body').animate({
+                    scrollTop: $('.customer-section').offset().top - 20
+                }, 200);
+                $('#customerSelect').select2('open');
+            });
+
+            $('#mobilePayBtn').click(function() {
+                $('#btnPay').click();
             });
         });
 
@@ -546,6 +769,67 @@ $customers = $stmt->fetchAll(PDO::FETCH_ASSOC);
             }
         }
 
+        // Function to refresh customer dropdown
+            function refreshCustomerDropdown() {
+                // Add timestamp to prevent caching
+                const timestamp = new Date().getTime();
+                
+                fetch(`get_customers.php?timestamp=${timestamp}`)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.success && data.customers) {
+                            updateCustomerDropdown(data.customers);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching customers:', error);
+                    });
+            }
+
+            // Function to update the customer dropdown with new data
+            function updateCustomerDropdown(customers) {
+                const dropdown = $('#customerSelect');
+                
+                // Store the currently selected value
+                const currentSelection = dropdown.val();
+                
+                // Clear existing options except for the first one
+                dropdown.find('option:not(:first)').remove();
+                
+                // Add new options
+                customers.forEach(customer => {
+                    const phoneDisplay = customer.phone ? ` (${customer.phone})` : '';
+                    const option = new Option(
+                        `${customer.name}${phoneDisplay}`, 
+                        customer.id
+                    );
+                    
+                    // Add the data-info attribute with JSON data
+                    $(option).attr('data-info', JSON.stringify(customer));
+                    
+                    // Add to dropdown
+                    dropdown.append(option);
+                });
+                
+                // Restore previous selection if it exists
+                if (currentSelection) {
+                    dropdown.val(currentSelection).trigger('change');
+                }
+                
+                // Refresh the Select2 instance
+                dropdown.trigger('select2:destroy').select2({
+                    theme: 'default',
+                    placeholder: 'Search for a customer...',
+                    allowClear: true,
+                    width: '100%'
+                });
+            }
+
         function displaySuggestions(suggestions) {
             // Store the full results for later use
             searchResults = suggestions;
@@ -597,6 +881,15 @@ $customers = $stmt->fetchAll(PDO::FETCH_ASSOC);
             
             console.log('Current sale after add:', currentSale); // Debug log
             renderTableRows();
+            
+            // For mobile: scroll to the table to show the added item
+            if (isMobile) {
+                setTimeout(() => {
+                    $('html, body').animate({
+                        scrollTop: $('.main-card').offset().top - 20
+                    }, 200);
+                }, 100);
+            }
         }
 
         // Event listener for input changes
@@ -779,6 +1072,7 @@ $customers = $stmt->fetchAll(PDO::FETCH_ASSOC);
             printWindow.document.write(invoiceHtml);
             printWindow.document.close();
             
+            printWindow.document.title = `Invoice - ${saleId}`;
             // Wait for resources to load then print
             printWindow.onload = function() {
                 printWindow.print();
@@ -786,28 +1080,33 @@ $customers = $stmt->fetchAll(PDO::FETCH_ASSOC);
         }
 
         function generateInvoiceHtml(saleId, items, customer) {
-            const today = new Date().toLocaleDateString();
+            const today = new Date().toLocaleDateString('en-GB', {
+                day: '2-digit', 
+                month: '2-digit', 
+                year: 'numeric'
+            });
             const total = items.reduce((sum, item) => sum + (item.price * item.qty), 0);
             
-            // Customer info section
+            // Generate customer details HTML if customer exists
             let customerHtml = '';
             if (customer) {
                 customerHtml = `
-                <div class="mt-3">
-                    <strong>Customer:</strong> ${customer.name}<br>
-                    ${customer.phone ? `<strong>Phone:</strong> ${customer.phone}<br>` : ''}
-                    ${customer.email ? `<strong>Email:</strong> ${customer.email}<br>` : ''}
-                    ${customer.address ? `<strong>Address:</strong> ${customer.address}<br>` : ''}
-                </div>`;
+                    <p><strong>${customer.name}</strong>${customer.phone ? ' | ' + customer.phone : ''}</p>
+                    ${customer.address ? `<p>${customer.address}</p>` : ''}
+                    ${customer.email ? `<p>${customer.email}</p>` : ''}
+                `;
+            } else {
+                customerHtml = '<p>No customer details</p>';
             }
             
-            // Get the invoice template with A4 size formatting
+            // Get the invoice template with A4 size formatting based on the Kayel Auto Parts design
             const invoiceTemplate = `<!DOCTYPE html>
                 <html lang="en">
                 <head>
                     <meta charset="UTF-8">
                     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+                    <title>Invoice - ${saleId}</title>
+                    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
                     <style>
                         /* A4 page size settings */
                         body {
@@ -815,7 +1114,7 @@ $customers = $stmt->fetchAll(PDO::FETCH_ASSOC);
                             height: 297mm;
                             margin: 0 auto;
                             padding: 0;
-                            font-size: 0.9rem;
+                            font-size: 0.85rem;
                         }
                         
                         @media print {
@@ -836,84 +1135,152 @@ $customers = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                 width: 100% !important;
                                 max-width: none !important;
                                 margin: 0 !important;
-                                padding: 10mm !important;
+                                padding: 8mm !important;
                             }
                         }
-                        
+
+                        /* Responsive styles for mobile */
+                        @media screen and (max-width: 767px) {
+                            body {
+                                width: 100%;
+                                height: auto;
+                            }
+                            .container {
+                                padding: 10px !important;
+                            }
+                            .logo-section, .company-title, .invoice-details, .company-contact, .customer-details {
+                                text-align: left !important;
+                                margin-bottom: 10px;
+                            }
+                        }
+
                         .container {
                             max-width: 210mm !important;
-                            padding: 10mm !important;
+                            padding: 8mm !important;
                         }
 
                         .invoice-header {
-                            background-color: #f8f9fa;
-                            padding: 1rem;
-                            border-radius: 0.5rem;
-                            margin-bottom: 1.5rem;
+                            padding: 0.5rem;
+                            margin-bottom: 1rem;
+                            position: relative;
                         }
 
-                        .company-details {
-                            margin-bottom: 0.5rem;
+                        .header-divider {
+                            height: 4px;
+                            background-color: #8B0000;
+                            margin-top: 0.5rem;
                         }
 
-                        .invoice-title {
-                            color: #2c3e50;
+                        .logo-section {
+                            padding-right: 5px;
+                        }
+
+                        .company-title {
+                            color: #8B0000;
                             font-weight: 700;
-                            margin-bottom: 0.25rem;
-                            font-size: 1.4rem;
+                            font-size: 1.5rem;
+                            text-transform: uppercase;
+                            margin: 0;
+                            line-height: 1.2;
                         }
 
-                        .company-info p {
-                            margin-bottom: 0.25rem;
-                            font-size: 0.85rem;
-                            line-height: 1.2;
+                        .company-contact, .customer-details {
+                            font-size: 0.8rem;
+                            line-height: 1.3;
+                        }
+
+                        .company-contact p, .customer-details p {
+                            margin: 0;
+                        }
+
+                        .invoice-details {
+                            font-size: 0.8rem;
+                            line-height: 1.3;
+                        }
+
+                        .invoice-details p {
+                            margin: 0;
+                        }
+
+                        .company-logo {
+                            max-height: 60px; /* Reduced for compactness */
                         }
 
                         .table th {
                             background-color: #f8f9fa;
+                            font-size: 0.85rem;
+                        }
+
+                        .table td {
+                            font-size: 0.85rem;
                         }
 
                         .total-section {
                             background-color: #f8f9fa;
-                            padding: 1rem;
+                            padding: 0.75rem;
                             border-radius: 0.5rem;
                             margin-top: 1.5rem;
                         }
 
+                        .total-section table {
+                            font-size: 0.85rem;
+                        }
+
                         .footer {
                             margin-top: 2rem;
-                            padding-top: 1rem;
+                            padding-top: 0.75rem;
                             border-top: 1px solid #dee2e6;
                             text-align: center;
+                            font-size: 0.8rem;
                         }
                     </style>
                 </head>
                 <body>
-                    <div class="container mt-3 mb-3">
+                    <div class="container">
+                        <!-- Print Button -->
+                        <div class="row mb-2 no-print">
+                            <div class="col-12">
+                                <button onclick="window.print()" class="btn btn-primary btn-sm float-end">
+                                    Print Invoice
+                                </button>
+                            </div>
+                        </div>
+
                         <!-- Invoice Header -->
                         <div class="invoice-header">
-                            <div class="row">
-                                <div class="col-md-6 company-details company-info">
-                                    <h1 class="invoice-title">YOHIMURA Auto</h1>
-                                    <p class="text-muted">
-                                        Dealers in Japanese Vehicle | Body Parts & Machinery | Bike Spare Parts
-                                    </p>
-                                    <div class="row">
-                                        <div class="col-12">
-                                            <p>Puttalam Road, Nikaweratiya</p>
-                                            <p>Tel: 077 720 7573 | 077 778 6876</p>
-                                            <p>Tel (Japan): +81 90 9181 7573 | +81 80 6914 5435</p>
-                                            <p>Email: yoshimuraauto88@gmail.com | <strong>Reg No:</strong> 11/3467</p>
+                            <!-- Top Row: Logo + Company Title | Invoice Details -->
+                            <div class="row align-items-center mb-2">
+                                <div class="col-8">
+                                    <div class="d-flex align-items-center">
+                                        <div class="logo-section">
+                                            <img src="../assets/images/logo.png" alt="Kayel Auto Parts Logo" class="company-logo img-fluid">
                                         </div>
+                                        <h1 class="company-title ms-2">KAYEL AUTO PARTS</h1>
                                     </div>
-                                    ${customerHtml}
                                 </div>
-                                <div class="col-md-6 text-md-end">
-                                    <h2 class="text-uppercase text-muted" style="font-size: 1.25rem;">Invoice</h2>
-                                    <p class="mb-1" style="font-size: 0.9rem;"><strong>Invoice #:</strong> ${saleId}</p>
-                                    <p class="mb-1" style="font-size: 0.9rem;"><strong>Date:</strong> ${today}</p>
+                                <div class="col-4 text-end">
+                                    <div class="invoice-details">
+                                        <p><strong>Invoice #:</strong> ${saleId}</p>
+                                        <p><strong>Date:</strong> ${today}</p>
+                                    </div>
                                 </div>
                             </div>
+                            <!-- Bottom Row: Company Contact | Customer Details -->
+                            <div class="row">
+                                <div class="col-6">
+                                    <div class="company-contact">
+                                        <p>Dealer of All Japan, Indian & China Vehicle Parts</p>
+                                        <p>Kurunegala Road, Vithikuliya, Nikaweratiya</p>
+                                        <p>Hot Line: 077-9632277</p>
+                                    </div>
+                                </div>
+                                <div class="col-6 text-end">
+                                    <div class="customer-details">
+                                        ${customerHtml}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="header-divider"></div>
                         </div>
 
                         <!-- Invoice Items -->
@@ -934,7 +1301,7 @@ $customers = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                             <td>${index + 1}</td>
                                             <td>${item.name}</td>
                                             <td class="text-center">${item.qty}</td>
-                                            <td class="text-end">LKR ${item.price.toFixed(2)}</td>
+                                            <td class="text-end">LKR ${parseFloat(item.price).toFixed(2)}</td>
                                             <td class="text-end">LKR ${(item.price * item.qty).toFixed(2)}</td>
                                         </tr>
                                     `).join('')}
@@ -961,7 +1328,7 @@ $customers = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         </div>
 
                         <!-- Footer -->
-                        <div class="footer text-center">
+                        <div class="footer">
                             <p class="text-muted mb-0">Thank you for your business!</p>
                         </div>
                     </div>

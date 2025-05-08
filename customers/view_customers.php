@@ -35,9 +35,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             } else {
                 try {
                     // Check if customer with the same email or phone already exists
+                    // Only check when either email or phone is provided
                     if (!empty($email) || !empty($phone)) {
-                        $stmt = $pdo->prepare("SELECT COUNT(*) FROM customers WHERE email = ? OR phone = ?");
-                        $stmt->execute([$email, $phone]);
+                        $query = "SELECT COUNT(*) FROM customers WHERE ";
+                        $params = [];
+                        
+                        if (!empty($email)) {
+                            $query .= "email = ?";
+                            $params[] = $email;
+                            
+                            if (!empty($phone)) {
+                                $query .= " OR phone = ?";
+                                $params[] = $phone;
+                            }
+                        } else if (!empty($phone)) {
+                            $query .= "phone = ?";
+                            $params[] = $phone;
+                        }
+                        
+                        $stmt = $pdo->prepare($query);
+                        $stmt->execute($params);
                         $exists = $stmt->fetchColumn() > 0;
 
                         if ($exists) {
@@ -46,7 +63,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     }
                     
                     if (empty($error)) {
-                        // Insert the new customer
+                        // Insert the new customer - use NULL for empty email instead of empty string
+                        $email = empty($email) ? null : $email;
+                        $phone = empty($phone) ? null : $phone;
+                        $address = empty($address) ? null : $address;
+                        
                         $stmt = $pdo->prepare("INSERT INTO customers (name, email, phone, address, created_at, updated_at) 
                                              VALUES (?, ?, ?, ?, NOW(), NOW())");
                         $stmt->execute([$name, $email, $phone, $address]);
@@ -75,9 +96,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             } else {
                 try {
                     // Check if customer with the same email or phone already exists, excluding current customer
+                    // Only check when either email or phone is provided
                     if (!empty($email) || !empty($phone)) {
-                        $stmt = $pdo->prepare("SELECT COUNT(*) FROM customers WHERE (email = ? OR phone = ?) AND id != ?");
-                        $stmt->execute([$email, $phone, $customer_id]);
+                        $query = "SELECT COUNT(*) FROM customers WHERE (";
+                        $params = [];
+                        
+                        if (!empty($email)) {
+                            $query .= "email = ?";
+                            $params[] = $email;
+                            
+                            if (!empty($phone)) {
+                                $query .= " OR phone = ?";
+                                $params[] = $phone;
+                            }
+                        } else if (!empty($phone)) {
+                            $query .= "phone = ?";
+                            $params[] = $phone;
+                        }
+                        
+                        $query .= ") AND id != ?";
+                        $params[] = $customer_id;
+                        
+                        $stmt = $pdo->prepare($query);
+                        $stmt->execute($params);
                         $exists = $stmt->fetchColumn() > 0;
 
                         if ($exists) {
@@ -86,7 +127,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     }
                     
                     if (empty($error)) {
-                        // Update the customer
+                        // Update the customer - use NULL for empty email instead of empty string
+                        $email = empty($email) ? null : $email;
+                        $phone = empty($phone) ? null : $phone;
+                        $address = empty($address) ? null : $address;
+                        
                         $stmt = $pdo->prepare("UPDATE customers 
                                              SET name = ?, email = ?, phone = ?, address = ?, updated_at = NOW() 
                                              WHERE id = ?");
@@ -268,6 +313,12 @@ if (isset($_GET['edit_id'])) {
             padding: 0.5rem;
             font-size: 0.75rem;
         }
+        
+        .optional-field {
+            color: var(--accent-blue);
+            font-size: 0.8rem;
+            margin-left: 0.5rem;
+        }
     </style>
 </head>
 <body>
@@ -387,17 +438,17 @@ if (isset($_GET['edit_id'])) {
                         </div>
                         
                         <div class="mb-3">
-                            <label for="email" class="form-label">Email</label>
+                            <label for="email" class="form-label">Email <span class="optional-field">(Optional)</span></label>
                             <input type="email" class="form-control" id="email" name="email">
                         </div>
                         
                         <div class="mb-3">
-                            <label for="phone" class="form-label">Phone</label>
+                            <label for="phone" class="form-label">Phone <span class="optional-field">(Optional)</span></label>
                             <input type="text" class="form-control" id="phone" name="phone">
                         </div>
                         
                         <div class="mb-3">
-                            <label for="address" class="form-label">Address</label>
+                            <label for="address" class="form-label">Address <span class="optional-field">(Optional)</span></label>
                             <textarea class="form-control" id="address" name="address" rows="3"></textarea>
                         </div>
                     </form>
@@ -428,17 +479,17 @@ if (isset($_GET['edit_id'])) {
                         </div>
                         
                         <div class="mb-3">
-                            <label for="edit_email" class="form-label">Email</label>
+                            <label for="edit_email" class="form-label">Email <span class="optional-field">(Optional)</span></label>
                             <input type="email" class="form-control" id="edit_email" name="email">
                         </div>
                         
                         <div class="mb-3">
-                            <label for="edit_phone" class="form-label">Phone</label>
+                            <label for="edit_phone" class="form-label">Phone <span class="optional-field">(Optional)</span></label>
                             <input type="text" class="form-control" id="edit_phone" name="phone">
                         </div>
                         
                         <div class="mb-3">
-                            <label for="edit_address" class="form-label">Address</label>
+                            <label for="edit_address" class="form-label">Address <span class="optional-field">(Optional)</span></label>
                             <textarea class="form-control" id="edit_address" name="address" rows="3"></textarea>
                         </div>
                     </form>

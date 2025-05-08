@@ -154,7 +154,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quotations - YOSHIMURA Auto</title>
+    <title>Quotations - KAYEL AUTO PARTS</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
@@ -165,6 +165,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             --border-color: #333;
             --text-primary: #fff;
             --text-secondary: #a0a0a0;
+            --accent-primary: #8B0000; /* Kayel Auto Parts red */
             --accent-blue: #60a5fa;
             --accent-green: #4ade80;
             --accent-red: #f87171;
@@ -177,6 +178,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             color: var(--text-primary);
             min-height: 100vh;
             padding: 2rem;
+        }
+
+        .page-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .company-title {
+            color: var(--accent-primary);
+            font-weight: 700;
+            font-size: 1.8rem;
+            text-transform: uppercase;
+            margin: 0 0 0 1rem;
+        }
+
+        .header-divider {
+            height: 3px;
+            background-color: var(--accent-primary);
+            margin: 0.5rem 0 2rem 0;
+        }
+
+        .company-logo {
+            max-height: 50px;
         }
 
         .card {
@@ -194,7 +219,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
 
         .form-control:focus, .form-select:focus {
             background-color: var(--darker-bg);
-            border-color: var(--accent-blue);
+            border-color: var(--accent-primary);
             color: var(--text-primary);
             box-shadow: none;
         }
@@ -277,6 +302,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             background-color: var(--accent-yellow);
         }
 
+        .btn-primary {
+            background-color: var(--accent-primary);
+            border-color: var(--accent-primary);
+        }
+
+        .btn-primary:hover, .btn-primary:focus {
+            background-color: #6d0000;
+            border-color: #6d0000;
+        }
+
         .dropdown-menu {
             background-color: var(--card-bg);
             border: 1px solid var(--border-color);
@@ -294,7 +329,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
 </head>
 <body>
     <div class="container-fluid">
-        <h1 class="mb-4">Quotations</h1>
+        <div class="page-header">
+            <img src="../assets/images/logo.png" alt="Kayel Auto Parts Logo" class="company-logo">
+            <h1 class="company-title">KAYEL AUTO PARTS</h1>
+        </div>
+        <div class="header-divider"></div>
+        
+        <h2 class="mb-4">Quotations Management</h2>
         
         <?php if (isset($_SESSION['message'])): ?>
             <div class="message">
