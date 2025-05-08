@@ -578,6 +578,7 @@ $customers = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     <button class="btn-print" onclick="window.open('../inventory/sales_report.php', '_blank')">Sales Report</button>
                     <button class="btn-print" onclick="window.open('../inventory/stock_report.php', '_blank')">Stock Report</button>
                     <button class="btn-print" onclick="window.open('../quotations/view_quotations.php', '_blank')">Quotations</button>
+                    <button class="btn-print" onclick="window.open('../returns/returns.php', '_blank')"> Returns/Refunds</button>
                 </div>
 
                 <!-- On desktop, show these buttons normally -->
@@ -604,6 +605,8 @@ $customers = $stmt->fetchAll(PDO::FETCH_ASSOC);
                             <button class="btn-print" onclick="window.open('../quotations/view_quotations.php', '_blank')">
                                 <i class="fa-solid fa-file-alt"></i> Quotations
                             </button>
+                            <button class="btn-print" onclick="window.open('../returns/returns.php', '_blank')">
+                                <i class="fa-solid fa-undo"></i> Returns/Refunds
                         </div>
                     </div>
                 </div>
